@@ -31,9 +31,12 @@ import com.android.billingclient.api.PurchaseHistoryResponseListener;
 import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.QueryPurchaseHistoryParams;
 import com.android.billingclient.api.QueryPurchasesParams;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
+// import com.android.billingclient.api.SkuDetails;
+// import com.android.billingclient.api.SkuDetailsParams;
+// import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.ProductDetailsResponseListener;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import java.util.HashMap;
@@ -55,7 +58,8 @@ class MethodCallHandlerImpl
   private final Context applicationContext;
   private final MethodChannel methodChannel;
 
-  private HashMap<String, SkuDetails> cachedSkus = new HashMap<>();
+  // private HashMap<String, SkuDetails> cachedSkus = new HashMap<>();
+  private HashMap<String, ProductDetails> cachedProducts = new HashMap<>();
 
   /** Constructs the MethodCallHandlerImpl */
   MethodCallHandlerImpl(
@@ -123,6 +127,10 @@ class MethodCallHandlerImpl
         List<String> skusList = call.argument("skusList");
         querySkuDetailsAsync((String) call.argument("skuType"), skusList, result);
         break;
+      case InAppPurchasePlugin.MethodNames.QUERY_PRODUCT_DETAILS:
+        List<String> skusList = call.argument("skusList");
+        queryProductDetailsAsync((String) call.argument("skuType"), skusList, result);
+        break;
       case InAppPurchasePlugin.MethodNames.LAUNCH_BILLING_FLOW:
         launchBillingFlow(
             (String) call.argument("sku"),
@@ -186,7 +194,7 @@ class MethodCallHandlerImpl
   }
 
   // TODO(garyq): Migrate to new subscriptions API: https://developer.android.com/google/play/billing/migrate-gpblv5
-  private void querySkuDetailsAsync(
+  /*private void querySkuDetailsAsync(
       final String skuType, final List<String> skusList, final MethodChannel.Result result) {
     if (billingClientError(result)) {
       return;
@@ -207,6 +215,31 @@ class MethodCallHandlerImpl
             result.success(skuDetailsResponse);
           }
         });
+  }*/
+
+  private void queryProductDetailsAsync( final ImmutableList<Product> productList, final MethodChannel.Result result) {
+    if (billingClientError(result)) {
+      return;
+    }
+
+    QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+            .setProductList(productList)
+            .build();
+
+    billingClient.queryProductDetailsAsync(
+            params,
+            new ProductDetailsResponseListener() {
+              public void onProductDetailsResponse(BillingResult billingResult, List<ProductDetails> productDetailsList) {
+                updateCachedSkus(productDetailsList);
+                final Map<String, Object> productDetailsResponse = new HashMap<>();
+                productDetailsResponse.put("billingResult", Translator.fromBillingResult(billingResult));
+                productDetailsResponse.put("skuDetailsList", fromSkuDetailsList(productDetailsList));
+                result.success(productDetailsResponse);
+                return;
+              }
+            }
+    );
+
   }
 
   private void launchBillingFlow(
@@ -215,13 +248,14 @@ class MethodCallHandlerImpl
       @Nullable String obfuscatedProfileId,
       @Nullable String oldSku,
       @Nullable String purchaseToken,
+      @Nullable int selectedOfferIndex
       int prorationMode,
       MethodChannel.Result result) {
     if (billingClientError(result)) {
       return;
     }
-    SkuDetails skuDetails = cachedSkus.get(sku);
-    if (skuDetails == null) {
+    ProductDetails productDetails = cachedSkus.get(sku);
+    if (productDetails == null) {
       result.error(
           "NOT_FOUND",
           String.format(
@@ -258,8 +292,19 @@ class MethodCallHandlerImpl
       return;
     }
 
-    BillingFlowParams.Builder paramsBuilder =
-        BillingFlowParams.newBuilder().setSkuDetails(skuDetails);
+    BillingFlowParams.Builder paramsBuilder = BillingFlowParams.ProductDetailsParams.newBuilder()
+            .setProductDetails(productDetails);
+    if (selectedOfferIndex) {
+      paramsBuilder.setOfferToken(productDetails.getSubscriptionOfferDetails().get(selectedOfferIndex).getOfferToken())
+    }
+
+    ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParamsList =
+            ImmutableList.of(
+                    paramsBuilder.build()
+            );
+
+    BillingFlowParams.newBuilder().setProductDetailsParamsList(productDetailsParamsList);
+
     if (accountId != null && !accountId.isEmpty()) {
       paramsBuilder.setObfuscatedAccountId(accountId);
     }
@@ -401,13 +446,13 @@ class MethodCallHandlerImpl
         });
   }
 
-  private void updateCachedSkus(@Nullable List<SkuDetails> skuDetailsList) {
-    if (skuDetailsList == null) {
+  private void updateCachedSkus(@Nullable List<ProductDetails> productDetailsList) {
+    if (productDetailsList == null) {
       return;
     }
 
-    for (SkuDetails skuDetails : skuDetailsList) {
-      cachedSkus.put(skuDetails.getSku(), skuDetails);
+    for (ProductDetails productDetails : productDetailsList) {
+      cachedSkus.put(productDetails.getProductId(), productDetails);
     }
   }
 
@@ -428,8 +473,8 @@ class MethodCallHandlerImpl
     // is handled by the `billingClientError()` call.
     assert billingClient != null;
 
-    SkuDetails skuDetails = cachedSkus.get(sku);
-    if (skuDetails == null) {
+    ProductDetails productDetails = cachedSkus.get(sku);
+    if (productDetails == null) {
       result.error(
           "NOT_FOUND",
           String.format(
@@ -440,7 +485,7 @@ class MethodCallHandlerImpl
     }
 
     PriceChangeFlowParams params =
-        new PriceChangeFlowParams.Builder().setSkuDetails(skuDetails).build();
+        new PriceChangeFlowParams.Builder().setProductDetails(productDetails).build();
     billingClient.launchPriceChangeConfirmationFlow(
         activity,
         params,
