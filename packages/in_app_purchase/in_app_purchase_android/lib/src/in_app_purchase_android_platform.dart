@@ -75,34 +75,34 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
   @override
   Future<ProductDetailsResponse> queryProductDetails(
       Set<String> identifiers) async {
-    List<SkuDetailsResponseWrapper> responses;
+    List<ProductDetailsResponseWrapper> responses;
     PlatformException? exception;
     try {
-      responses = await Future.wait(<Future<SkuDetailsResponseWrapper>>[
-        billingClient.querySkuDetails(
+      responses = await Future.wait(<Future<ProductDetailsResponseWrapper>>[
+        billingClient.queryProductDetails(
             skuType: SkuType.inapp, skusList: identifiers.toList()),
-        billingClient.querySkuDetails(
+        billingClient.queryProductDetails(
             skuType: SkuType.subs, skusList: identifiers.toList())
       ]);
     } on PlatformException catch (e) {
       exception = e;
-      responses = <SkuDetailsResponseWrapper>[
+      responses = <ProductDetailsResponseWrapper>[
         // ignore: invalid_use_of_visible_for_testing_member
-        SkuDetailsResponseWrapper(
+        ProductDetailsResponseWrapper(
             billingResult: BillingResultWrapper(
                 responseCode: BillingResponse.error, debugMessage: e.code),
-            skuDetailsList: const <SkuDetailsWrapper>[]),
+            skuDetailsList: const <ProductDetailsWrapper>[]),
         // ignore: invalid_use_of_visible_for_testing_member
-        SkuDetailsResponseWrapper(
+        ProductDetailsResponseWrapper(
             billingResult: BillingResultWrapper(
                 responseCode: BillingResponse.error, debugMessage: e.code),
-            skuDetailsList: const <SkuDetailsWrapper>[])
+            skuDetailsList: const <ProductDetailsWrapper>[])
       ];
     }
     final List<ProductDetails> productDetailsList =
-        responses.expand((SkuDetailsResponseWrapper response) {
+        responses.expand((ProductDetailsResponseWrapper response) {
       return response.skuDetailsList;
-    }).map((SkuDetailsWrapper skuDetailWrapper) {
+    }).map((ProductDetailsWrapper skuDetailWrapper) {
       return GooglePlayProductDetails.fromSkuDetails(skuDetailWrapper);
     }).toList();
 

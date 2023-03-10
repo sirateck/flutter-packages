@@ -7,7 +7,8 @@ import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_inte
 import 'package:json_annotation/json_annotation.dart';
 
 import 'billing_client_wrapper.dart';
-import 'sku_details_wrapper.dart';
+// import 'sku_details_wrapper.dart';
+import 'product_details_wrapper.dart';
 
 // WARNING: Changes to `@JsonSerializable` classes need to be reflected in the
 // below generated file. Run `flutter packages pub run build_runner watch` to

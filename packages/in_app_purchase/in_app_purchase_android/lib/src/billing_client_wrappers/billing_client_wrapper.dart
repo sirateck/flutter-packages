@@ -127,24 +127,24 @@ class BillingClient {
     return channel.invokeMethod<void>('BillingClient#endConnection()');
   }
 
-  /// Returns a list of [SkuDetailsWrapper]s that have [SkuDetailsWrapper.sku]
-  /// in `skusList`, and [SkuDetailsWrapper.type] matching `skuType`.
+  /// Returns a list of [ProductDetailsWrapper]s that have [ProductDetailsWrapper.productId]
+  /// in `skusList`, and [ProductDetailsWrapper.type] matching `skuType`.
   ///
-  /// Calls through to [`BillingClient#querySkuDetailsAsync(SkuDetailsParams,
-  /// SkuDetailsResponseListener)`](https://developer.android.com/reference/com/android/billingclient/api/BillingClient#querySkuDetailsAsync(com.android.billingclient.api.SkuDetailsParams,%20com.android.billingclient.api.SkuDetailsResponseListener))
+  /// Calls through to [`BillingClient#queryProductDetailsAsync(QueryProductDetailsParams,
+  ///  ProductDetailsResponseListener)`](https://developer.android.com/reference/com/android/billingclient/api/BillingClient#queryProductDetailsAsync(com.android.billingclient.api.QueryProductDetailsParams, com.android.billingclient.api.ProductDetailsResponseListener))
   /// Instead of taking a callback parameter, it returns a Future
-  /// [SkuDetailsResponseWrapper]. It also takes the values of
-  /// `SkuDetailsParams` as direct arguments instead of requiring it constructed
+  /// [ProductDetailsResponseWrapper]. It also takes the values of
+  /// `QueryProductDetailsParams` as direct arguments instead of requiring it constructed
   /// and passed in as a class.
-  Future<SkuDetailsResponseWrapper> querySkuDetails(
+  Future<ProductDetailsResponseWrapper> queryProductDetails(
       {required SkuType skuType, required List<String> skusList}) async {
     final Map<String, dynamic> arguments = <String, dynamic>{
       'skuType': const SkuTypeConverter().toJson(skuType),
       'skusList': skusList
     };
-    return SkuDetailsResponseWrapper.fromJson((await channel.invokeMapMethod<
+    return ProductDetailsResponseWrapper.fromJson((await channel.invokeMapMethod<
                 String, dynamic>(
-            'BillingClient#querySkuDetailsAsync(SkuDetailsParams, SkuDetailsResponseListener)',
+            'BillingClient#queryProductDetailsAsync(QueryProductDetailsParams, ProductDetailsResponseListener)',
             arguments)) ??
         <String, dynamic>{});
   }

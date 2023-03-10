@@ -6,7 +6,7 @@ package io.flutter.plugins.inapppurchase;
 
 import static io.flutter.plugins.inapppurchase.Translator.fromPurchaseHistoryRecordList;
 import static io.flutter.plugins.inapppurchase.Translator.fromPurchasesList;
-import static io.flutter.plugins.inapppurchase.Translator.fromSkuDetailsList;
+import static io.flutter.plugins.inapppurchase.Translator.fromProductDetailsList;
 
 import android.app.Activity;
 import android.app.Application;
@@ -123,10 +123,10 @@ class MethodCallHandlerImpl
       case InAppPurchasePlugin.MethodNames.END_CONNECTION:
         endConnection(result);
         break;
-      case InAppPurchasePlugin.MethodNames.QUERY_SKU_DETAILS:
+/*      case InAppPurchasePlugin.MethodNames.QUERY_SKU_DETAILS:
         List<String> skusList = call.argument("skusList");
         querySkuDetailsAsync((String) call.argument("skuType"), skusList, result);
-        break;
+        break;*/
       case InAppPurchasePlugin.MethodNames.QUERY_PRODUCT_DETAILS:
         List<String> skusList = call.argument("skusList");
         queryProductDetailsAsync((String) call.argument("skuType"), skusList, result);
@@ -138,6 +138,7 @@ class MethodCallHandlerImpl
             (String) call.argument("obfuscatedProfileId"),
             (String) call.argument("oldSku"),
             (String) call.argument("purchaseToken"),
+            (int) call.argument("selectedOfferIndex"),
             call.hasArgument("prorationMode")
                 ? (int) call.argument("prorationMode")
                 : ProrationMode.UNKNOWN_SUBSCRIPTION_UPGRADE_DOWNGRADE_POLICY,
@@ -233,7 +234,7 @@ class MethodCallHandlerImpl
                 updateCachedSkus(productDetailsList);
                 final Map<String, Object> productDetailsResponse = new HashMap<>();
                 productDetailsResponse.put("billingResult", Translator.fromBillingResult(billingResult));
-                productDetailsResponse.put("skuDetailsList", fromSkuDetailsList(productDetailsList));
+                productDetailsResponse.put("skuDetailsList", fromProductDetailsList(productDetailsList));
                 result.success(productDetailsResponse);
                 return;
               }

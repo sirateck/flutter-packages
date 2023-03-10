@@ -19,27 +19,31 @@ class GooglePlayProductDetails extends ProductDetails {
     required super.rawPrice,
     required super.currencyCode,
     required this.skuDetails,
-    required super.currencySymbol,
+    // required super.currencySymbol,
   });
 
   /// Generate a [GooglePlayProductDetails] object based on an Android
-  /// [SkuDetailsWrapper] object.
+  /// [ProductDetailsWrapper] object.
   factory GooglePlayProductDetails.fromSkuDetails(
-    SkuDetailsWrapper skuDetails,
+    ProductDetailsWrapper skuDetails,
   ) {
     return GooglePlayProductDetails(
       id: skuDetails.sku,
       title: skuDetails.title,
       description: skuDetails.description,
-      price: skuDetails.price,
-      rawPrice: skuDetails.priceAmountMicros / 1000000.0,
-      currencyCode: skuDetails.priceCurrencyCode,
-      currencySymbol: skuDetails.priceCurrencySymbol,
+      price: skuDetails
+          .subscriptionOfferDetails[0].pricingPhases[0].formattedPrice,
+      rawPrice: skuDetails
+              .subscriptionOfferDetails[0].pricingPhases[0].priceAmountMicros /
+          1000000.0,
+      currencyCode: skuDetails
+          .subscriptionOfferDetails[0].pricingPhases[0].priceCurrencyCode,
+      // currencySymbol: skuDetails.subscriptionOfferDetails[0].pricingPhases[0],
       skuDetails: skuDetails,
     );
   }
 
   /// Points back to the [SkuDetailsWrapper] object that was used to generate
   /// this [GooglePlayProductDetails] object.
-  final SkuDetailsWrapper skuDetails;
+  final ProductDetailsWrapper skuDetails;
 }
