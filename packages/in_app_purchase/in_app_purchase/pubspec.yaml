@@ -13,7 +13,12 @@ flutter:
   plugin:
     platforms:
       android:
-        default_package: in_app_purchase_android
+        default_package:
+          in_app_purchase_android:
+            git:
+              url: https://github.com/sirateck/flutter-packages.git
+              ref: feat/implement_android_billing_v5
+              path: packages/in_app_purchase/in_app_purchase_android
       ios:
         default_package: in_app_purchase_storekit
       macos:
@@ -41,7 +46,7 @@ dev_dependencies:
   test: ^1.16.0
 
 screenshots:
-  - description: 'Example of in-app purchase on ios'
+  - description: "Example of in-app purchase on ios"
     path: doc/iap_ios.gif
-  - description: 'Example of in-app purchase on android'
+  - description: "Example of in-app purchase on android"
     path: doc/iap_android.gif
