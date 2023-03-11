@@ -54,8 +54,11 @@ import java.util.Locale;
     return info;
   }
 
-  static HashMap<String, Object> fromOneTimePurchaseOfferDetails(ProductDetails.OneTimePurchaseOfferDetails detail) {
+  static HashMap<String, Object> fromOneTimePurchaseOfferDetails(@Nullable ProductDetails.OneTimePurchaseOfferDetails detail) {
     HashMap<String, Object> info = new HashMap<>();
+      if (detail == null) {
+      return info;
+    }
     info.put("formattedPrice", detail.getFormattedPrice());
     info.put("priceAmountMicros", detail.getPriceAmountMicros());
     info.put("priceCurrencyCode", detail.getPriceCurrencyCode());
@@ -68,7 +71,6 @@ import java.util.Locale;
     info.put("offerId", detail.getOfferId());
     info.put("offerTags", detail.getOfferTags());
     info.put("offerToken", detail.getOfferToken());
-    info.put("productId", detail.getProductId());
     info.put("pricingPhases", fromPricingPhaseList(detail.getPricingPhases().getPricingPhaseList()));
     return info;
   }

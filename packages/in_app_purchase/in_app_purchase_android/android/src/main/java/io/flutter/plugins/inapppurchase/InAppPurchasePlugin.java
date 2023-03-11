@@ -51,7 +51,7 @@ public class InAppPurchasePlugin implements FlutterPlugin, ActivityAware {
         "BillingClient#launchPriceChangeConfirmationFlow (Activity, PriceChangeFlowParams, PriceChangeConfirmationListener)";
     static final String GET_CONNECTION_STATE = "BillingClient#getConnectionState()";
     static final String QUERY_PRODUCT_DETAILS =
-            "BillingClient#queryProductDetailsAsync(ProductDetailsParams, ProductDetailsResponseListener)";
+            "BillingClient#queryProductDetailsAsync(QueryProductDetailsParams, ProductDetailsResponseListener)";
 
     private MethodNames() {};
   }

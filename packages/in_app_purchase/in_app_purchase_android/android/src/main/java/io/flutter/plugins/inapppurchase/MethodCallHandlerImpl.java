@@ -36,12 +36,15 @@ import com.android.billingclient.api.QueryPurchasesParams;
 // import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsParams.Product;
 import com.android.billingclient.api.ProductDetailsResponseListener;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 
 /** Handles method channel for the plugin. */
 class MethodCallHandlerImpl
@@ -58,8 +61,8 @@ class MethodCallHandlerImpl
   private final Context applicationContext;
   private final MethodChannel methodChannel;
 
-  // private HashMap<String, SkuDetails> cachedSkus = new HashMap<>();
-  private HashMap<String, ProductDetails> cachedProducts = new HashMap<>();
+  private HashMap<String, ProductDetails> cachedSkus = new HashMap<>();
+  // private HashMap<String, ProductDetails> cachedProducts = new HashMap<>();
 
   /** Constructs the MethodCallHandlerImpl */
   MethodCallHandlerImpl(
@@ -128,8 +131,15 @@ class MethodCallHandlerImpl
         querySkuDetailsAsync((String) call.argument("skuType"), skusList, result);
         break;*/
       case InAppPurchasePlugin.MethodNames.QUERY_PRODUCT_DETAILS:
-        List<String> skusList = call.argument("skusList");
-        queryProductDetailsAsync((String) call.argument("skuType"), skusList, result);
+      List<String> skusList = call.argument("skusList");
+      List<Product> products = new ArrayList<>();
+       for (String sku : skusList) {
+          products.add(QueryProductDetailsParams.Product.newBuilder()
+                                            .setProductId(sku)
+                                            .setProductType((String) call.argument("skuType"))
+                                            .build());
+       }
+        queryProductDetailsAsync(products, result);
         break;
       case InAppPurchasePlugin.MethodNames.LAUNCH_BILLING_FLOW:
         launchBillingFlow(
@@ -218,7 +228,7 @@ class MethodCallHandlerImpl
         });
   }*/
 
-  private void queryProductDetailsAsync( final ImmutableList<Product> productList, final MethodChannel.Result result) {
+  private void queryProductDetailsAsync(final List<Product> productList, final MethodChannel.Result result) {
     if (billingClientError(result)) {
       return;
     }
@@ -249,7 +259,7 @@ class MethodCallHandlerImpl
       @Nullable String obfuscatedProfileId,
       @Nullable String oldSku,
       @Nullable String purchaseToken,
-      @Nullable int selectedOfferIndex
+      @Nullable int selectedOfferIndex,
       int prorationMode,
       MethodChannel.Result result) {
     if (billingClientError(result)) {
@@ -293,18 +303,18 @@ class MethodCallHandlerImpl
       return;
     }
 
-    BillingFlowParams.Builder paramsBuilder = BillingFlowParams.ProductDetailsParams.newBuilder()
+    BillingFlowParams.ProductDetailsParams.Builder productDetailsParamsBuilder = BillingFlowParams.ProductDetailsParams.newBuilder()
             .setProductDetails(productDetails);
-    if (selectedOfferIndex) {
-      paramsBuilder.setOfferToken(productDetails.getSubscriptionOfferDetails().get(selectedOfferIndex).getOfferToken())
+    if (selectedOfferIndex > -1) {
+      productDetailsParamsBuilder.setOfferToken(productDetails.getSubscriptionOfferDetails().get(selectedOfferIndex).getOfferToken());
     }
 
     ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParamsList =
             ImmutableList.of(
-                    paramsBuilder.build()
+                    productDetailsParamsBuilder.build()
             );
 
-    BillingFlowParams.newBuilder().setProductDetailsParamsList(productDetailsParamsList);
+    BillingFlowParams.Builder paramsBuilder = BillingFlowParams.newBuilder().setProductDetailsParamsList(productDetailsParamsList);
 
     if (accountId != null && !accountId.isEmpty()) {
       paramsBuilder.setObfuscatedAccountId(accountId);
@@ -484,15 +494,6 @@ class MethodCallHandlerImpl
           null);
       return;
     }
-
-    PriceChangeFlowParams params =
-        new PriceChangeFlowParams.Builder().setProductDetails(productDetails).build();
-    billingClient.launchPriceChangeConfirmationFlow(
-        activity,
-        params,
-        billingResult -> {
-          result.success(Translator.fromBillingResult(billingResult));
-        });
   }
 
   private boolean billingClientError(MethodChannel.Result result) {
