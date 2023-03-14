@@ -5,6 +5,7 @@
 import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_interface.dart';
 
 import '../../billing_client_wrappers.dart';
+import '../billing_client_wrappers/product_details_wrappers/subscription_offer_details_wrapper.dart';
 
 /// The class represents the information of a product as registered in at
 /// Google Play store front.
@@ -27,17 +28,16 @@ class GooglePlayProductDetails extends ProductDetails {
   factory GooglePlayProductDetails.fromSkuDetails(
     ProductDetailsWrapper skuDetails,
   ) {
+    // find the subscriptionOfferDetails basePlan, without offerId
+    final SubscriptionOfferDetailsWrapper subscriptionOfferDetails = skuDetails.subscriptionOfferDetails.firstWhere((SubscriptionOfferDetailsWrapper detail) => detail.offerId.isEmpty);
     return GooglePlayProductDetails(
       id: skuDetails.sku,
       title: skuDetails.title,
       description: skuDetails.description,
-      price: skuDetails
-          .subscriptionOfferDetails[0].pricingPhases[0].formattedPrice,
-      rawPrice: skuDetails
-              .subscriptionOfferDetails[0].pricingPhases[0].priceAmountMicros /
+      price: subscriptionOfferDetails.pricingPhases[0].formattedPrice,
+      rawPrice: subscriptionOfferDetails.pricingPhases[0].priceAmountMicros /
           1000000.0,
-      currencyCode: skuDetails
-          .subscriptionOfferDetails[0].pricingPhases[0].priceCurrencyCode,
+      currencyCode: subscriptionOfferDetails.pricingPhases[0].priceCurrencyCode,
       // currencySymbol: skuDetails.subscriptionOfferDetails[0].pricingPhases[0],
       skuDetails: skuDetails,
     );

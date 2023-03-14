@@ -148,7 +148,9 @@ class MethodCallHandlerImpl
             (String) call.argument("obfuscatedProfileId"),
             (String) call.argument("oldSku"),
             (String) call.argument("purchaseToken"),
-            (int) call.argument("selectedOfferIndex"),
+            call.hasArgument("selectedOfferIndex")
+                ? (int) call.argument("selectedOfferIndex")
+                : -1,
             call.hasArgument("prorationMode")
                 ? (int) call.argument("prorationMode")
                 : ProrationMode.UNKNOWN_SUBSCRIPTION_UPGRADE_DOWNGRADE_POLICY,
@@ -259,7 +261,7 @@ class MethodCallHandlerImpl
       @Nullable String obfuscatedProfileId,
       @Nullable String oldSku,
       @Nullable String purchaseToken,
-      @Nullable int selectedOfferIndex,
+      int selectedOfferIndex,
       int prorationMode,
       MethodChannel.Result result) {
     if (billingClientError(result)) {
@@ -307,6 +309,13 @@ class MethodCallHandlerImpl
             .setProductDetails(productDetails);
     if (selectedOfferIndex > -1) {
       productDetailsParamsBuilder.setOfferToken(productDetails.getSubscriptionOfferDetails().get(selectedOfferIndex).getOfferToken());
+    } else { // find basePlan offerToken
+        for (ProductDetails.SubscriptionOfferDetails subscriptionOfferDetail : productDetails.getSubscriptionOfferDetails()) {
+          if (subscriptionOfferDetail.getOfferId() == null) {
+            productDetailsParamsBuilder.setOfferToken(subscriptionOfferDetail.getOfferToken());  
+            break;
+          }
+        }
     }
 
     ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParamsList =
