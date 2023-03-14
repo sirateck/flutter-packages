@@ -22,13 +22,13 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  # in_app_purchase_android:
-  #   git:
-  #     url: https://github.com/sirateck/flutter-packages.git
-  #     ref: feat/implement_android_billing_v5
-  #     path: packages/in_app_purchase/in_app_purchase_android
   in_app_purchase_android:
-    path: ../in_app_purchase_android
+    git:
+      url: https://github.com/sirateck/flutter-packages.git
+      ref: feat/implement_android_billing_v5
+      path: packages/in_app_purchase/in_app_purchase_android
+  # in_app_purchase_android:
+  #   path: ../in_app_purchase_android
   in_app_purchase_platform_interface: ^1.0.0
   in_app_purchase_storekit: ^0.3.4
 
