@@ -190,6 +190,7 @@ class BillingClient {
       String? obfuscatedProfileId,
       String? oldSku,
       String? purchaseToken,
+      int? selectedOfferIndex,
       ProrationMode? prorationMode}) async {
     assert(sku != null);
     assert((oldSku == null) == (purchaseToken == null),
@@ -200,6 +201,7 @@ class BillingClient {
       'obfuscatedProfileId': obfuscatedProfileId,
       'oldSku': oldSku,
       'purchaseToken': purchaseToken,
+      'selectedOfferIndex': selectedOfferIndex,
       'prorationMode': const ProrationModeConverter().toJson(prorationMode ??
           ProrationMode.unknownSubscriptionUpgradeDowngradePolicy)
     };

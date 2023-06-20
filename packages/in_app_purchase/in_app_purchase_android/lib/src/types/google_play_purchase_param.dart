@@ -13,9 +13,13 @@ class GooglePlayPurchaseParam extends PurchaseParam {
     required super.productDetails,
     super.applicationUserName,
     this.changeSubscriptionParam,
+    this.selectedOfferIndex
   });
 
   /// The 'changeSubscriptionParam' containing information for upgrading or
   /// downgrading an existing subscription.
   final ChangeSubscriptionParam? changeSubscriptionParam;
+
+  /// Base plan selected offer index
+  final int? selectedOfferIndex;
 }
